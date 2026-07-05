@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Estudiantil | Bienestar Universitario</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/estudiantes.js" defer></script>
+    <!-- Chatbot -->
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <script src="../js/knowledge_base.js"></script>
+    <script src="../js/chatbot-engine.js"></script>
+    <script src="../js/chatbot-ui.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary-color: #475569; /* Gris azulado neutro */
+            --primary-light: #f1f5f9;
+            --secondary-color: #64748b;
+            --accent-color: #94a3b8;
+            --text-color: #1e293b;
+            --bg-color: #f8fafc;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.5s ease;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.5rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .nav-pills {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .nav-pills a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 12px 25px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-pills a:hover {
+            background: white;
+            color: #1e293b;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: -40px auto 60px;
+            padding: 0 20px;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            color: #0f172a;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            padding: 20px;
+            text-align: left;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        td {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+        
+        .badge {
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .bg-purple { background-color: #f3e8ff; color: #7e22ce; }
+        .bg-teal { background-color: #ccfbf1; color: #0f766e; }
+        
+        #recommendations-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .recommendation-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px rgba(0,0,0,0.05);
+        }
+
+        /* Sección Deportes */
+        .activities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .activity-item {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .activity-item:hover {
+            border-color: #cbd5e1;
+            background: white;
+        }
+
+        .activity-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px;
+            margin-top: auto;
+        }
+
+        @media (max-width: 640px) {
+            header h1 { font-size: 1.8rem; }
+            .content-card { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="animate__animated animate__fadeInDown">
+        <h1><i class="fas fa-user-circle"></i> <span id="studentName">Estudiante</span></h1>
+        <p class="animate__animated animate__fadeIn animate__delay-1s">Portal Institucional de Bienestar</p>
+        <nav>
+            <ul class="nav-pills">
+                <li><a href="bienestar.html"><i class="fas fa-plus-circle"></i> Nueva Cita</a></li>
+                <li><a href="actividades.html"><i class="fas fa-running"></i> Inscripción Actividades</a></li>
+                <li><a href="perfil.html"><i class="fas fa-user-edit"></i> Mi Perfil</a></li>
+                <li><a href="../index.html" onclick="localStorage.clear()"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Citas -->
+        <section class="content-card animate__animated animate__fadeInUp">
+            <h2><i class="fas fa-calendar-alt"></i> Mis Citas</h2>
+            <div class="table-responsive">
+                <table id="estudiantes-table">
+                    <thead>
+                        <tr>
+                            <th>Especialista</th>
+                            <th>ID Cita</th>
+                            <th>Área</th>
+                            <th>Sede</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5" class="text-center">Cargando citas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Recomendaciones -->
+        <section class="content-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+            <h2><i class="fas fa-lightbulb"></i> Recomendaciones</h2>
+            <div id="recommendations-container">
+                <p class="text-muted">No hay recomendaciones recientes.</p>
+            </div>
+        </section>
+
+        <!-- Deportes y Actividades -->
+        <section class="content-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+            <h2><i class="fas fa-running"></i> Deportes y Recreación</h2>
+            <p class="text-muted mb-4">Aprovecha las actividades disponibles para tu bienestar físico y cultural.</p>
+            <div class="activities-grid">
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-futbol"></i></div>
+                    <div>
+                        <h4 class="m-0">Fútbol</h4>
+                        <small>Lun - Vie | Cancha Central</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-volleyball-ball"></i></div>
+                    <div>
+                        <h4 class="m-0">Voleibol</h4>
+                        <small>Mar - Jue | Coliseo</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-dumbbell"></i></div>
+                    <div>
+                        <h4 class="m-0">Gimnasio</h4>
+                        <small>6:00 AM - 9:00 PM</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-chess"></i></div>
+                    <div>
+                        <h4 class="m-0">Ajedrez</h4>
+                        <small>Club de Estrategia</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-music"></i></div>
+                    <div>
+                        <h4 class="m-0">Banda Musical</h4>
+                        <small>Miércoles | Auditorio</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-theater-masks"></i></div>
+                    <div>
+                        <h4 class="m-0">Teatro</h4>
+                        <small>Viernes | Sala Cultural</small>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 28px; text-align: center;">
+                <a href="actividades.html" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #4361ee, #0096c7); color: white; padding: 13px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 14px rgba(67,97,238,0.3);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(67,97,238,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(67,97,238,0.3)'">
+                    <i class="fas fa-clipboard-list"></i> Inscribirme en una actividad o equipo
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Bienestar Institucional | Calidad de Vida Estudiantil</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nombre = localStorage.getItem('nombre');
+            if (nombre) document.getElementById('studentName').textContent = nombre;
+        });
+    </script>
+</body>
+</html>

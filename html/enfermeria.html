@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Profesional | Enfermería</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/usuario.js" defer></script>
+    <script src="../js/enfermeria.js" defer></script>
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #475569;
+            --bg-body: #f8fafc;
+            --accent: #94a3b8;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--bg-body);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 700; }
+        header p { margin: 10px 0 0; opacity: 0.8; font-size: 0.9rem; }
+        
+        .nav-pills {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .nav-pills a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .nav-pills a:hover {
+            background: white;
+            color: #1e293b;
+            transform: translateY(-2px);
+        }
+        
+        main {
+            max-width: 1300px;
+            margin: -30px auto 50px;
+            padding: 0 20px;
+        }
+        
+        .white-card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        h2 { font-weight: 700; margin-top: 0; color: var(--primary); font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+        
+        table.dataTable { border: none !important; margin-top: 25px !important; }
+        table.dataTable thead th { background: #f8fafc !important; color: #64748b !important; padding: 18px !important; border-bottom: 2px solid #f1f5f9 !important; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        table.dataTable tbody td { padding: 16px !important; border-bottom: 1px solid #f1f5f9 !important; font-size: 0.9rem; }
+        
+        .action-btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .btn-atender { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+        .btn-atender:hover { background: #e2e8f0; }
+        
+        .btn-eliminar { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+        .btn-eliminar:hover { background: #ffe4e6; }
+
+        footer { text-align: center; padding: 40px; color: #94a3b8; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <header class="animate__animated animate__fadeInDown">
+        <h1><i class="fas fa-heartbeat"></i> Panel de Enfermería</h1>
+        <p>Bienestar Universitario | Gestión de Salud Primaria</p>
+        <nav>
+            <ul class="nav-pills">
+                <li><a href="recom_enfermeria.html"><i class="fas fa-plus"></i> Atención Urgente</a></li>
+                <li><a href="perfil.html"><i class="fas fa-user-edit"></i> Mi Perfil</a></li>
+                <li><a href="../index.html" onclick="localStorage.clear()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="white-card animate__animated animate__fadeInUp">
+            <h2><i class="fas fa-notes-medical"></i> Citas Pendientes de Enfermería</h2>
+            <div class="table-responsive">
+                <table id="dataTable" class="display nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Correo</th>
+                            <th>Motivo</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Sede</th>
+                            <th>Documento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2024 Bienestar Institucional | Panel Profesional
+    </footer>
+</body>
+</html>

@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portal del Encargado de Actividades — Bienestar Universitario. Gestión de inscripciones deportivas y culturales.">
+    <title>Portal Encargado | Actividades · Bienestar Universitario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3451d4;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #273549;
+            --border: rgba(255,255,255,0.08);
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --radius: 16px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .nav-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .nav-subtitle {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        .btn-logout {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239,68,68,0.25);
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #312e81 60%, #065f46 100%);
+            padding: 48px 32px 64px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 50%, rgba(67,97,238,0.15) 0%, transparent 70%);
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #6ee7b7;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.95rem;
+            margin-bottom: 28px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 12px 20px;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .stat-pill .num {
+            display: block;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .stat-pill .label {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.55);
+        }
+
+        .num.green { color: #6ee7b7; }
+        .num.blue  { color: #93c5fd; }
+        .num.amber { color: #fcd34d; }
+        .num.red   { color: #fca5a5; }
+
+        /* ── LAYOUT ── */
+        .main {
+            max-width: 1200px;
+            margin: -28px auto 60px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main { grid-template-columns: 1fr; }
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .card-title .icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        .icon-blue { background: rgba(67,97,238,0.2); color: #93c5fd; }
+        .icon-green { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+        .icon-amber { background: rgba(245,158,11,0.2); color: #fcd34d; }
+
+        .card-body { padding: 20px 24px 24px; }
+
+        /* ── SEARCH ── */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 14px;
+            margin-bottom: 16px;
+        }
+
+        .search-bar i { color: var(--muted); font-size: 0.85rem; }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.88rem;
+            width: 100%;
+        }
+
+        .search-bar input::placeholder { color: var(--muted); }
+
+        /* ── FILTERS ── */
+        .filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .filter-chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .filter-chip.active,
+        .filter-chip:hover {
+            background: rgba(67,97,238,0.2);
+            border-color: rgba(67,97,238,0.4);
+            color: #93c5fd;
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.83rem;
+        }
+
+        thead th {
+            background: var(--surface2);
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.72rem;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody tr:last-child { border-bottom: none; }
+
+        tbody td {
+            padding: 11px 14px;
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-sport { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+        .badge-cultural { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+        .badge-wellness { background: rgba(245,158,11,0.2); color: #fcd34d; }
+        .badge-open { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+        .badge-limited { background: rgba(245,158,11,0.15); color: #fcd34d; }
+        .badge-full { background: rgba(239,68,68,0.15); color: #fca5a5; }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+
+        .no-data i { font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.4; }
+
+        /* ── CUPOS PANEL ── */
+        .cupo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cupo-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+        }
+
+        .cupo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .cupo-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .cupo-name i {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .cupo-numbers {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .cupo-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .cupo-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .fill-green { background: linear-gradient(90deg, #10b981, #6ee7b7); }
+        .fill-amber { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+        .fill-red { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+
+        /* ── EXPORT BTN ── */
+        .btn-export {
+            background: rgba(67,97,238,0.15);
+            border: 1px solid rgba(67,97,238,0.3);
+            color: #93c5fd;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-export:hover {
+            background: rgba(67,97,238,0.25);
+        }
+
+        /* ── REFRESH ── */
+        .btn-refresh {
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #6ee7b7;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(16,185,129,0.25);
+        }
+
+        /* ── LOADING ── */
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 30px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.15);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── BACK LINK ── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            margin: 12px 0;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--text); }
+
+        /* ── DETAIL ROW ── */
+        .detail-text {
+            font-size: 0.78rem;
+            color: var(--muted);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        footer {
+            background: #070e1a;
+            text-align: center;
+            padding: 24px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-icon"><i class="fas fa-running"></i></div>
+            <div>
+                <div class="nav-title">Portal de Actividades</div>
+                <div class="nav-subtitle">Bienestar Universitario</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <div class="nav-user">
+                <i class="fas fa-user-tie" style="color: var(--accent);"></i>
+                <span id="nav-username">Encargado</span>
+            </div>
+            <div class="nav-actions">
+                <a href="perfil.html" class="nav-btn" style="text-decoration: none;">
+                    <i class="fas fa-user-edit"></i> Mi Perfil
+                </a>
+                <button class="nav-btn btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="hero-tag"><i class="fas fa-shield-alt"></i> Panel Administrativo — Encargado de Actividades</div>
+            <h1>Gestión de Inscripciones 🏟️</h1>
+            <p>Visualiza estudiantes inscritos, cupos disponibles y datos relevantes para cada actividad.</p>
+            <div class="stats-row" id="stats-row">
+                <div class="stat-pill"><span class="num blue" id="stat-total">—</span><span class="label">Total Inscritos</span></div>
+                <div class="stat-pill"><span class="num green" id="stat-actividades">—</span><span class="label">Actividades</span></div>
+                <div class="stat-pill"><span class="num amber" id="stat-cupos">—</span><span class="label">Cupos libres</span></div>
+                <div class="stat-pill"><span class="num red" id="stat-llenas">—</span><span class="label">Actividades llenas</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- COLUMNA IZQUIERDA: Tabla de inscritos -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon icon-blue"><i class="fas fa-users"></i></div>
+                        Estudiantes Inscritos
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-refresh" onclick="loadData()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                        <button class="btn-export" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> Exportar</button>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <!-- Búsqueda -->
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Buscar por nombre, actividad o semestre…" oninput="filterTable()">
+                    </div>
+
+                    <!-- Filtros por categoría -->
+                    <div class="filters">
+                        <button class="filter-chip active" data-filter="todas" onclick="setFilter('todas', this)">🗂️ Todas</button>
+                        <button class="filter-chip" data-filter="sport" onclick="setFilter('sport', this)">⚽ Deportivas</button>
+                        <button class="filter-chip" data-filter="cultural" onclick="setFilter('cultural', this)">🎭 Culturales</button>
+                        <button class="filter-chip" data-filter="wellness" onclick="setFilter('wellness', this)">♟️ Bienestar</button>
+                    </div>
+
+                    <!-- Tabla -->
+                    <div class="table-wrap">
+                        <table id="inscripciones-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Estudiante</th>
+                                    <th>Identificación</th>
+                                    <th>Actividad</th>
+                                    <th>Semestre</th>
+                                    <th>Sede</th>
+                                    <th>Disponibilidad</th>
+                                    <th>Condición</th>
+                                    <th>Fecha Inscripción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inscripciones-body">
+                                <tr>
+                                    <td colspan="9">
+                                        <div class="loading-state">
+                                            <div class="spinner"></div>
+                                            Cargando inscripciones…
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <a href="../index.html" class="back-link"><i class="fas fa-chevron-left"></i> Volver al inicio</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Cupos -->
+        <div style="display:flex; flex-direction:column; gap:20px; position:sticky; top:90px;">
+
+            <!-- Panel de cupos -->
+            <div class="card">
+                <div class="card-header" style="padding-bottom:16px;">
+                    <div class="card-title" style="display:flex; justify-content:space-between; width:100%;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="icon icon-green"><i class="fas fa-tachometer-alt"></i></div>
+                            Cupos por Actividad
+                        </div>
+                        <button class="btn-refresh" onclick="openCrearActividadModal()" style="font-size:0.75rem; padding:5px 10px;"><i class="fas fa-plus"></i> Crear</button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding-top:0;">
+                    <div class="cupo-list" id="cupos-list">
+                        <div class="loading-state"><div class="spinner"></div> Cargando…</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leyenda -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title" style="margin-bottom:14px; font-size:0.9rem;">
+                        <div class="icon icon-amber"><i class="fas fa-info-circle"></i></div>
+                        Leyenda de Cupos
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="badge badge-open">Disponible</span>
+                            <span style="font-size:0.78rem; color:var(--muted);">Más del 50% libre</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="badge badge-limited">Pocos cupos</span>
+                            <span style="font-size:0.78rem; color:var(--muted);">Menos del 25% libre</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="badge badge-full">Lleno</span>
+                            <span style="font-size:0.78rem; color:var(--muted);">Sin cupos disponibles</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL CREAR ACTIVIDAD -->
+    <div id="modal-crear-actividad" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; width:100%; max-width:400px; box-shadow:var(--shadow);">
+            <h3 style="margin-bottom:16px; display:flex; justify-content:space-between;">Crear Actividad <button onclick="closeModal('modal-crear-actividad')" style="background:none;border:none;color:var(--muted);cursor:pointer;"><i class="fas fa-times"></i></button></h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="crear-nombre" placeholder="Nombre" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <select id="crear-categoria" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                    <option value="sport">Deportiva</option>
+                    <option value="cultural">Cultural</option>
+                    <option value="wellness">Bienestar</option>
+                </select>
+                <input type="text" id="crear-tipo" placeholder="Tipo (ej. deportiva equipo)" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <input type="text" id="crear-equipo" placeholder="Equipo (opcional)" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <input type="text" id="crear-icono" placeholder="Ícono (ej. fa-futbol)" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <input type="number" id="crear-cupo-total" placeholder="Cupo Total" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <button onclick="submitCrearActividad()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:600; margin-top:8px;">Guardar Actividad</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR CUPOS -->
+    <div id="modal-editar-cupos" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; width:100%; max-width:400px; box-shadow:var(--shadow);">
+            <h3 style="margin-bottom:16px; display:flex; justify-content:space-between;"><span id="editar-nombre"></span> <button onclick="closeModal('modal-editar-cupos')" style="background:none;border:none;color:var(--muted);cursor:pointer;"><i class="fas fa-times"></i></button></h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="hidden" id="editar-id">
+                <label style="font-size:0.8rem; color:var(--muted);">Cupo Total</label>
+                <input type="number" id="editar-cupo-total" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <label style="font-size:0.8rem; color:var(--muted);">Cupo Disponible</label>
+                <input type="number" id="editar-cupo-disponible" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:white;">
+                <button onclick="submitEditarCupos()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:600; margin-top:8px;">Actualizar Cupos</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 Bienestar Universitario — Portal Encargado de Actividades Deportivas y Culturales</p>
+    </footer>
+
+    <script>
+        // ─── Variables ───────────────────────────────────────────────
+        const API = 'http://127.0.0.1:3000';
+        let allInscripciones = [];
+        let allActividades = [];
+        let currentFilter = 'todas';
+
+        // ─── Init ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const nombre = localStorage.getItem('nombre') || localStorage.getItem('username') || 'Encargado';
+            document.getElementById('nav-username').textContent = nombre;
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                const [resInsc, resActs] = await Promise.all([
+                    axios.get(`${API}/get_inscripciones`, { headers: getAuthHeader() }),
+                    axios.get(`${API}/get_actividades`, { headers: getAuthHeader() })
+                ]);
+                allInscripciones = resInsc.data || [];
+                allActividades = resActs.data || [];
+                renderTable();
+                renderCupos();
+                updateStats();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('inscripciones-body').innerHTML = `
+                    <tr><td colspan="9">
+                        <div class="no-data">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Error al cargar los datos. Verifica que el servidor esté activo.
+                        </div>
+                    </td></tr>`;
+                document.getElementById('cupos-list').innerHTML = `<div class="no-data"><i class="fas fa-plug"></i>Sin conexión al servidor.</div>`;
+            }
+        }
+
+        function getAuthHeader() {
+            const token = localStorage.getItem('token');
+            return token ? { Authorization: `Bearer ${token}` } : {};
+        }
+
+        // ─── Render Tabla ────────────────────────────────────────────
+        function renderTable() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const tbody = document.getElementById('inscripciones-body');
+
+            let data = allInscripciones;
+
+            // Filtrar por categoría (necesita cruzar con actividades)
+            if (currentFilter !== 'todas') {
+                const actsByCateg = new Set(allActividades.filter(a => a.categoria === currentFilter).map(a => a.nombre));
+                data = data.filter(i => actsByCateg.has(i.actividad));
+            }
+
+            // Filtrar por búsqueda
+            if (search) {
+                data = data.filter(i =>
+                    i.estudiante.toLowerCase().includes(search) ||
+                    (i.actividad || '').toLowerCase().includes(search) ||
+                    (i.semestre || '').toLowerCase().includes(search) ||
+                    (i.identificacion || '').includes(search)
+                );
+            }
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9"><div class="no-data"><i class="fas fa-search"></i>No se encontraron inscripciones.</div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map((i, idx) => {
+                const act = allActividades.find(a => a.nombre === i.actividad);
+                const catBadge = act ? getCatBadge(act.categoria) : '';
+                const cond = i.condicion && i.condicion.trim() ? i.condicion : '—';
+                const fecha = i.fecha ? i.fecha.split(' ')[0] : '—';
+                return `
+                    <tr>
+                        <td style="color:var(--muted); font-size:0.75rem;">${idx + 1}</td>
+                        <td style="font-weight:600;">${escHtml(i.estudiante)}</td>
+                        <td style="color:var(--muted);">${escHtml(i.identificacion || '—')}</td>
+                        <td>${escHtml(i.actividad)} ${catBadge}</td>
+                        <td>${escHtml(i.semestre || '—')}</td>
+                        <td>${escHtml(i.sede || '—')}</td>
+                        <td>${escHtml(getDisponibilidadLabel(i.disponibilidad))}</td>
+                        <td class="detail-text" title="${escHtml(cond)}">${escHtml(cond)}</td>
+                        <td style="color:var(--muted); font-size:0.78rem;">${escHtml(fecha)}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        // ─── Render Cupos ────────────────────────────────────────────
+        function renderCupos() {
+            const container = document.getElementById('cupos-list');
+            if (!allActividades.length) {
+                container.innerHTML = '<div class="no-data"><i class="fas fa-inbox"></i> Sin actividades.</div>';
+                return;
+            }
+
+            container.innerHTML = allActividades.map(a => {
+                const ocupados = a.cupo_total - a.cupo_disponible;
+                const pct = a.cupo_total > 0 ? Math.round((ocupados / a.cupo_total) * 100) : 0;
+                let fillClass = 'fill-green';
+                let badgeClass = 'badge-open';
+                let badgeLabel = 'Disponible';
+                if (a.cupo_disponible === 0) { fillClass = 'fill-red'; badgeClass = 'badge-full'; badgeLabel = 'Lleno'; }
+                else if (a.cupo_disponible / a.cupo_total < 0.25) { fillClass = 'fill-amber'; badgeClass = 'badge-limited'; badgeLabel = 'Pocos'; }
+
+                const icon = getCatIcon(a.categoria);
+                const iconBg = a.categoria === 'sport' ? 'rgba(16,185,129,0.2)' : a.categoria === 'cultural' ? 'rgba(139,92,246,0.2)' : 'rgba(245,158,11,0.2)';
+                const iconColor = a.categoria === 'sport' ? '#6ee7b7' : a.categoria === 'cultural' ? '#c4b5fd' : '#fcd34d';
+
+                return `
+                    <div class="cupo-item">
+                        <div class="cupo-header">
+                            <div class="cupo-name">
+                                <i class="fas ${escHtml(a.icono)}" style="background:${iconBg}; color:${iconColor}; width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:0.75rem;"></i>
+                                ${escHtml(a.nombre)}
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span class="badge ${badgeClass}">${badgeLabel}</span>
+                                <button onclick="openEditarCuposModal(${a.id}, '${escHtml(a.nombre)}', ${a.cupo_total}, ${a.cupo_disponible})" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:0.8rem; transition:0.2s;"><i class="fas fa-edit"></i></button>
+                            </div>
+                        </div>
+                        <div class="cupo-bar">
+                            <div class="cupo-fill ${fillClass}" style="width:${pct}%;"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                            <span style="font-size:0.72rem; color:var(--muted);">${ocupados} ocupados</span>
+                            <span style="font-size:0.72rem; color:var(--muted);">${a.cupo_disponible} libres / ${a.cupo_total}</span>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ─── Stats ───────────────────────────────────────────────────
+        function updateStats() {
+            document.getElementById('stat-total').textContent = allInscripciones.length;
+            document.getElementById('stat-actividades').textContent = allActividades.length;
+            const libres = allActividades.reduce((s, a) => s + (a.cupo_disponible || 0), 0);
+            const llenas = allActividades.filter(a => a.cupo_disponible === 0).length;
+            document.getElementById('stat-cupos').textContent = libres;
+            document.getElementById('stat-llenas').textContent = llenas;
+        }
+
+        // ─── Filter / Search ─────────────────────────────────────────
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderTable();
+        }
+
+        function filterTable() {
+            renderTable();
+        }
+
+        // ─── Export CSV ──────────────────────────────────────────────
+        function exportarCSV() {
+            if (!allInscripciones.length) {
+                Swal.fire({ icon: 'info', title: 'Sin datos', text: 'No hay inscripciones para exportar.', background: '#1e293b', color: '#f1f5f9' });
+                return;
+            }
+            const headers = ['#', 'Estudiante', 'Identificación', 'Actividad', 'Semestre', 'Sede', 'Disponibilidad', 'Condición salud', 'Fecha'];
+            const rows = allInscripciones.map((i, idx) => [
+                idx + 1,
+                i.estudiante,
+                i.identificacion || '',
+                i.actividad,
+                i.semestre || '',
+                i.sede || '',
+                getDisponibilidadLabel(i.disponibilidad),
+                (i.condicion || '').replace(/,/g, ';'),
+                i.fecha ? i.fecha.split(' ')[0] : ''
+            ]);
+
+            const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `inscripciones_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ─── Logout ──────────────────────────────────────────────────
+        function logout() {
+            localStorage.clear();
+            window.location.href = '../index.html';
+        }
+
+        // ─── Helpers ─────────────────────────────────────────────────
+        function getCatBadge(cat) {
+            const map = { sport: 'badge-sport', cultural: 'badge-cultural', wellness: 'badge-wellness' };
+            const labels = { sport: 'Deporte', cultural: 'Cultural', wellness: 'Bienestar' };
+            return `<span class="badge ${map[cat] || ''}">${labels[cat] || cat}</span>`;
+        }
+
+        function getCatIcon(cat) {
+            const map = { sport: 'fa-running', cultural: 'fa-theater-masks', wellness: 'fa-chess' };
+            return map[cat] || 'fa-star';
+        }
+
+        function getDisponibilidadLabel(d) {
+            const map = { manana: 'Mañana', tarde: 'Tarde', noche: 'Noche', sabados: 'Sábados', flexible: 'Flexible' };
+            return map[d] || d || '—';
+        }
+
+        function escHtml(str) {
+            if (str == null) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ─── Modals y Acciones ─────────────────────────────────────────
+        function openCrearActividadModal() {
+            document.getElementById('modal-crear-actividad').style.display = 'flex';
+        }
+
+        function openEditarCuposModal(id, nombre, total, disponible) {
+            document.getElementById('editar-id').value = id;
+            document.getElementById('editar-nombre').textContent = 'Editar: ' + nombre;
+            document.getElementById('editar-cupo-total').value = total;
+            document.getElementById('editar-cupo-disponible').value = disponible;
+            document.getElementById('modal-editar-cupos').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function submitCrearActividad() {
+            const data = {
+                nombre: document.getElementById('crear-nombre').value,
+                categoria: document.getElementById('crear-categoria').value,
+                tipo: document.getElementById('crear-tipo').value,
+                equipo: document.getElementById('crear-equipo').value,
+                icono: document.getElementById('crear-icono').value,
+                cupo_total: parseInt(document.getElementById('crear-cupo-total').value) || 0
+            };
+            if (!data.nombre) {
+                Swal.fire({ icon: 'warning', title: 'Cuidado', text: 'El nombre es obligatorio.', background: '#1e293b', color: '#f1f5f9' });
+                return;
+            }
+            try {
+                await axios.post(`${API}/crear_actividad`, data, { headers: getAuthHeader() });
+                Swal.fire({ icon: 'success', title: 'Éxito', text: 'Actividad creada', background: '#1e293b', color: '#f1f5f9', timer: 1500 });
+                closeModal('modal-crear-actividad');
+                document.getElementById('crear-nombre').value = '';
+                document.getElementById('crear-tipo').value = '';
+                document.getElementById('crear-equipo').value = '';
+                document.getElementById('crear-icono').value = '';
+                document.getElementById('crear-cupo-total').value = '';
+                loadData();
+            } catch(e) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo crear la actividad.', background: '#1e293b', color: '#f1f5f9' });
+            }
+        }
+
+        async function submitEditarCupos() {
+            const id = document.getElementById('editar-id').value;
+            const data = {
+                cupo_total: parseInt(document.getElementById('editar-cupo-total').value) || 0,
+                cupo_disponible: parseInt(document.getElementById('editar-cupo-disponible').value) || 0
+            };
+            try {
+                await axios.post(`${API}/actualizar_cupos/${id}`, data, { headers: getAuthHeader() });
+                Swal.fire({ icon: 'success', title: 'Éxito', text: 'Cupos actualizados', background: '#1e293b', color: '#f1f5f9', timer: 1500 });
+                closeModal('modal-editar-cupos');
+                loadData();
+            } catch(e) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron actualizar los cupos.', background: '#1e293b', color: '#f1f5f9' });
+            }
+        }
+    </script>
+</body>
+</html>

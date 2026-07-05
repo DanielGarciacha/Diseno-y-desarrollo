@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Solicita tu cita de Psicología o Enfermería en Bienestar Universitario con orientación del chatbot de síntomas.">
+    <title>Solicitar Cita | Bienestar Universitario</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chatbot -->
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <script src="../js/knowledge_base.js"></script>
+    <script src="../js/chatbot-engine.js"></script>
+    <script src="../js/chatbot-ui.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #334155;
+            --bg: #f8fafc;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #1e293b;
+        }
+
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body data-chatbot-auto="true">
+    <div class="form-card">
+        <h1>Solicitud de Cita</h1>
+        <p>Selecciona el servicio y horario de tu preferencia.</p>
+
+        <form id="appointmentForm">
+            <div class="form-group">
+                <label>Tu Documento de Identidad</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" id="identificacion" placeholder="Autocompletado" readonly>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Servicio Requerido</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-hand-holding-medical"></i>
+                    <select id="servicio" required>
+                        <option value="">Selecciona un servicio</option>
+                        <option value="psicologia">Psicología</option>
+                        <option value="enfermeria">Enfermería</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Sede de Atención</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-building"></i>
+                    <select id="sede" required>
+                        <option value="">Selecciona la sede</option>
+                        <option value="Soledad">Sede Soledad</option>
+                        <option value="Plaza de la Paz">Sede Plaza de la Paz</option>
+                        <option value="Colsamiro">Sede Colsamiro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row" style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Fecha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="fecha" required style="padding-left: 45px;">
+                    </div>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Hora</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-clock"></i>
+                        <select id="hora" required
+                            style="padding-left: 45px; -webkit-appearance: none; appearance: none;">
+                            <option value="">Seleccione hora</option>
+                            <option value="07:00">07:00 AM</option>
+                            <option value="07:30">07:30 AM</option>
+                            <option value="08:00">08:00 AM</option>
+                            <option value="08:30">08:30 AM</option>
+                            <option value="09:00">09:00 AM</option>
+                            <option value="09:30">09:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="14:00">02:00 PM</option>
+                            <option value="14:30">02:30 PM</option>
+                            <option value="15:00">03:00 PM</option>
+                            <option value="15:30">03:30 PM</option>
+                            <option value="16:00">04:00 PM</option>
+                            <option value="16:30">04:30 PM</option>
+                            <option value="17:00">05:00 PM</option>
+                            <option value="17:30">05:30 PM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Motivo de la consulta</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-comment-dots" style="top: 15px; transform: none;"></i>
+                    <input type="text" id="motivo" placeholder="Ej: Control de rutina, malestar..." required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Agendar Cita</button>
+            <a href="estudiantes.html" class="btn-back"><i class="fas fa-chevron-left"></i> Volver al panel</a>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('appointmentForm');
+            const identInput = document.getElementById('identificacion');
+            const fechaInput = document.getElementById('fecha');
+            const sedeSelect = document.getElementById('sede');
+            const horaSelect = document.getElementById('hora');
+            const servicioSelect = document.getElementById('servicio');
+            const motivoInput = document.getElementById('motivo');
+
+            // 1. Autocompletado de identificación
+            const storedIdent = localStorage.getItem('identificacion');
+            if (storedIdent && identInput) {
+                identInput.value = storedIdent;
+            }
+
+            // 2. Fetch horas disponibles cuando cambia la fecha o la sede
+            function fetchDisponibilidad() {
+                const fecha = fechaInput.value;
+                const sede = sedeSelect.value;
+                if (!fecha || !sede) {
+                    horaSelect.innerHTML = '<option value="">Seleccione hora</option>';
+                    return;
+                }
+
+                axios.get(`http://127.0.0.1:3000/disponibilidad?fecha=${fecha}&sede=${sede}`)
+                    .then(response => {
+                        const horas = response.data.horas_disponibles || [];
+                        horaSelect.innerHTML = '<option value="">Seleccione hora</option>';
+                        if (horas.length === 0) {
+                            horaSelect.innerHTML = '<option value="">Sin turnos disponibles</option>';
+                        } else {
+                            horas.forEach(h => {
+                                // Formatear hora para mostrar (ej: 08:30 AM)
+                                const [horaStr, minStr] = h.split(':');
+                                let hInt = parseInt(horaStr);
+                                const ampm = hInt >= 12 ? 'PM' : 'AM';
+                                hInt = hInt % 12;
+                                if (hInt === 0) hInt = 12;
+                                const hFormat = hInt.toString().padStart(2, '0');
+                                const displayTime = `${hFormat}:${minStr} ${ampm}`;
+
+                                const opt = document.createElement('option');
+                                opt.value = h.substring(0, 5); // 08:30
+                                opt.textContent = displayTime;
+                                horaSelect.appendChild(opt);
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching disponibilidad:', err);
+                        horaSelect.innerHTML = '<option value="">Error cargando horas</option>';
+                    });
+            }
+
+            fechaInput.addEventListener('change', fetchDisponibilidad);
+            sedeSelect.addEventListener('change', fetchDisponibilidad);
+
+            // Validar fecha pasada
+            fechaInput.addEventListener('change', function () {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate < today) {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No puede seleccionar una fecha pasada' });
+                    this.value = '';
+                }
+            });
+
+            // 3. Envío del formulario al endpoint correcto
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = 'Procesando...';
+                submitBtn.disabled = true;
+
+                const formData = {
+                    motivo: motivoInput.value.trim(),
+                    fecha: fechaInput.value,
+                    hora: horaSelect.value,
+                    sede: sedeSelect.value,
+                    identificacion: identInput.value.trim()
+                };
+
+                const endpoint = servicioSelect.value === 'enfermeria' ? '/citas_enfermeria' : '/citas';
+
+                axios.post(`http://127.0.0.1:3000${endpoint}`, formData)
+                    .then(response => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Cita registrada exitosamente!',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        form.reset();
+                        if (storedIdent) identInput.value = storedIdent;
+                        horaSelect.innerHTML = '<option value="">Seleccione hora</option>';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        let errorMessage = 'Error al registrar la cita';
+                        if (error.response && error.response.data && error.response.data.informacion) {
+                            errorMessage = error.response.data.informacion;
+                        }
+                        Swal.fire({ icon: 'error', title: 'Error', text: errorMessage });
+                    })
+                    .finally(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

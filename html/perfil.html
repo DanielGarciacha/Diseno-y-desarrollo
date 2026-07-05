@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil | Bienestar Universitario</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        main {
+            max-width: 600px;
+            margin: -30px auto 50px;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 40px;
+            border: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background: var(--bg);
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67,97,238,0.1);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #3451d4;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="javascript:history.back()" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+        <h1 style="margin:0;">Mi Perfil</h1>
+        <p style="margin-top:8px; opacity:0.8; font-size:0.9rem;">Actualiza tu información personal</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="nombre" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Identificación</label>
+                    <input type="text" id="identificacion" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="correo" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="telefono" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre de Usuario</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nueva Contraseña (Opcional)</label>
+                    <input type="password" id="password" class="form-control" placeholder="Dejar en blanco para no cambiar">
+                </div>
+
+                <button type="submit" class="btn-submit">Guardar Cambios</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://127.0.0.1:3000';
+        const token = localStorage.getItem('token');
+        const username = localStorage.getItem('username');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!token || !username) {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            try {
+                const res = await axios.get(`${API}/my_profile?username=${encodeURIComponent(username)}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                const user = res.data;
+                // Guardar el ID para el update
+                window._profileUserId = user.id;
+                
+                document.getElementById('nombre').value = user.nombre || '';
+                document.getElementById('identificacion').value = user.identificacion || '';
+                document.getElementById('correo').value = user.correo || '';
+                document.getElementById('telefono').value = user.telefono || '';
+                document.getElementById('username').value = user.username || '';
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'No se pudo cargar el perfil. ¿Estás autenticado?', 'error');
+            }
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                user_id: window._profileUserId,
+                nombre: document.getElementById('nombre').value,
+                identificacion: document.getElementById('identificacion').value,
+                correo: document.getElementById('correo').value,
+                telefono: document.getElementById('telefono').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            // Remove empty password
+            if (!data.password) delete data.password;
+
+            try {
+                await axios.put(`${API}/update_my_profile`, data, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                // Actualizar datos en localStorage si cambiaron
+                localStorage.setItem('nombre', data.nombre);
+                localStorage.setItem('username', data.username);
+                
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Perfil actualizado correctamente.',
+                    icon: 'success',
+                    timer: 2000
+                }).then(() => {
+                    history.back();
+                });
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'No se pudo actualizar el perfil.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

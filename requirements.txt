@@ -1,0 +1,9 @@
+flask
+flask_mysqldb
+flask_cors
+mysql-connector-python
+flask_jwt_extended
+pandas
+xlsxwriter
+mysqlclient
+python-dotenv
